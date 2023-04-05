@@ -1,10 +1,35 @@
 import json
 import time
+import os
 
 import fusion
 
 error_codes = {"INTERNAL", "NOT_FOUND", "ALREADY_EXISTS", "INVALID_ARGUMENT", "NOT_AUTHENTICATED",
                "PERMISSION_DENIED", "NOT_IMPLEMENTED", "FAILED_PRECONDITION", "CONFLICT", "FAILED_TRANSACTION"}
+
+
+def get_fusion_config() -> fusion.Configuration:
+    """
+    Configure OAuth2 access token for authorization.
+    Retrieve Fusion configuration with custom `host`, `token_endpoint`, `issuer_id` and `private_key_file`.
+    """
+    config = fusion.Configuration()
+
+    # required values
+    if "API_CLIENT" not in os.environ:
+        raise ValueError("Environmental variable 'API_CLIENT' is not set!")
+    if "PRIV_KEY_FILE" not in os.environ:
+        raise ValueError("Environmental variable 'PRIV_KEY_FILE' is not set!")
+    config.issuer_id = os.environ["API_CLIENT"]
+    config.private_key_file = os.environ["PRIV_KEY_FILE"]
+
+    # optional values
+    if "HOST_ENDPOINT" in os.environ:
+        config.host = os.environ["HOST_ENDPOINT"]
+    if "TOKEN_ENDPOINT" in os.environ:
+        config.token_endpoint = os.environ["TOKEN_ENDPOINT"]
+
+    return config
 
 
 def wait_operation_finish(op_id: str, client: fusion.ApiClient) -> fusion.models.operation.Operation:
